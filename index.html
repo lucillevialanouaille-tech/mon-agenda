@@ -35,7 +35,53 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--sur
 #mobile-nav button{flex:1;background:none;border:none;color:var(--text-m);font-size:.52rem;letter-spacing:.05em;text-transform:uppercase;padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:"DM Sans",sans-serif;transition:color .2s}
 #mobile-nav button .mn-icon{font-size:1.15rem;line-height:1}
 #mobile-nav button.active{color:var(--gold-l)}
-@media(max-width:700px){nav .nav-tabs{display:none}nav .nav-brand{font-size:1rem;margin-right:auto}nav .nav-right{margin-left:0}#mobile-nav{display:flex}.app-body{margin-bottom:calc(56px + env(safe-area-inset-bottom))}.view{padding:14px}#rs-grid{grid-template-columns:1fr !important}}
+@media(max-width:700px){
+  nav .nav-tabs{display:none}
+  nav .nav-brand{font-size:1rem;margin-right:auto}
+  nav .nav-right .btn{display:none}
+  nav .nav-right{margin-left:0}
+  #mobile-nav{display:flex}
+  .app-body{margin-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .view{padding:12px 10px}
+  #rs-grid{grid-template-columns:1fr !important}
+
+  /* Cases à cocher habitudes — touch-friendly */
+  .habit-check{width:34px !important;height:34px !important;border-radius:8px !important;font-size:18px !important;border-width:2px !important}
+  .habit-row{gap:12px !important;padding:10px 2px !important;align-items:center}
+  .habit-name{font-size:.88rem !important;line-height:1.3}
+  .habit-streak{font-size:.75rem !important}
+
+  /* Heatmap — cellules lisibles */
+  #month-heatmap div[style*="grid-template-columns"]{gap:3px !important}
+
+  /* Vignettes semaine — compactes et lisibles */
+  .week-mini{gap:3px !important}
+  .day-mini{padding:6px 4px !important;min-height:60px !important}
+  .day-mini-name{font-size:.55rem !important;letter-spacing:.05em !important}
+  .day-mini-num{font-size:1.1rem !important;margin-bottom:4px !important}
+  .mini-block{height:4px !important;margin-bottom:1px !important}
+
+  /* Cartes RS — titre sur sa propre ligne */
+  .rs-card-row{flex-wrap:wrap !important;gap:5px !important;padding:8px 10px !important}
+  .rs-card-title-inline{width:100% !important;flex:none !important;order:5;white-space:normal !important;font-size:.82rem !important}
+  .rs-card-row .rs-date{font-size:.65rem !important}
+  .rs-steps{padding:6px 10px 8px !important;gap:4px !important;flex-wrap:wrap !important}
+  .rs-step{padding:6px 8px !important}
+  .rs-step-lbl{font-size:.68rem !important}
+
+  /* Dashboard */
+  .card{padding:14px 12px !important}
+  .section-title{font-size:.65rem !important}
+
+  /* Timeline */
+  #timeline-wrap{height:70px !important}
+
+  /* Overlay panels */
+  .overlay-box{padding:20px 16px !important;width:95vw !important}
+
+  /* Formulaires */
+  input[type=text],input[type=time],textarea,select{font-size:16px !important}
+}
 .nav-brand{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:300;color:var(--gold-l);letter-spacing:.05em;margin-right:32px;white-space:nowrap}
 .nav-tabs{display:flex;gap:2px;flex:1}
 .nav-tab{background:none;border:none;color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:.78rem;padding:8px 16px;border-radius:7px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .2s;white-space:nowrap}
@@ -1742,7 +1788,7 @@ function renderRsCard(p){
       <span class="rs-format-badge ${p.format==='image'?'rs-img':'rs-vid'}" style="font-size:.6rem;padding:2px 7px">${fmtLabel}</span>
       ${nets}
       <span class="rs-date" style="white-space:nowrap">📅 ${dateLbl}</span>
-      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;color:var(--text);padding:0 4px">${esc(p.title)}</div>
+      <div class="rs-card-title-inline" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;color:var(--text);padding:0 4px">${esc(p.title)}</div>
       <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
         <div style="width:52px;height:3px;background:var(--border);border-radius:2px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${isComplete?'var(--gold)':fc};transition:width .4s"></div>
