@@ -46,7 +46,7 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--sur
   #rs-grid{grid-template-columns:1fr !important}
 
   /* Cases à cocher habitudes — touch-friendly */
-  .habit-check{width:34px !important;height:34px !important;border-radius:8px !important;font-size:18px !important;border-width:2px !important}
+  .habit-check{width:26px !important;height:26px !important;border-radius:6px !important;font-size:15px !important;border-width:2px !important}
   .habit-row{gap:12px !important;padding:10px 2px !important;align-items:center}
   .habit-name{font-size:.88rem !important;line-height:1.3}
   .habit-streak{font-size:.75rem !important}
@@ -75,6 +75,10 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--sur
 
   /* Timeline */
   #timeline-wrap{height:70px !important}
+
+  /* Humeur : 2 colonnes sur mobile, cellules tactiles */
+  #mood-calendar > div{grid-template-columns:repeat(2,1fr) !important}
+  .mood-day-cell{min-width:22px !important;min-height:22px !important}
 
   /* Overlay panels */
   .overlay-box{padding:20px 16px !important;width:95vw !important}
@@ -2018,7 +2022,7 @@ function renderMood(){
       var onclk=isFuture?'':("openMoodPanel('"+iso+"')");
       var boxShadow=isToday?';box-shadow:0 0 0 1.5px #c9a84c':'';
       var innerTxt=score!=null&&score===20?'✦':'';
-      html+='<div onclick="'+onclk+'" title="'+title.replace(/"/g,'&quot;').replace(/\n/g,' ')+'" style="aspect-ratio:1;border-radius:3px;background:'+color+';border:1px solid '+border+';cursor:'+cursor+';transition:transform .1s;font-size:.5rem;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.4);font-weight:700'+boxShadow+'" onmouseenter="moodHover(this,true)" onmouseleave="moodHover(this,false)">'+innerTxt+'</div>';
+      html+='<div class="mood-day-cell" onclick="'+onclk+'" title="'+title.replace(/"/g,'&quot;').replace(/\n/g,' ')+'" style="aspect-ratio:1;border-radius:3px;background:'+color+';border:1px solid '+border+';cursor:'+cursor+';transition:transform .1s;font-size:.5rem;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.4);font-weight:700'+boxShadow+'" onmouseenter="moodHover(this,true)" onmouseleave="moodHover(this,false)">'+innerTxt+'</div>';
     }
     html+=`</div></div>`;
   }
