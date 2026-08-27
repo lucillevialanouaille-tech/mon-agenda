@@ -43,7 +43,6 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--sur
   #mobile-nav{display:flex}
   .app-body{margin-bottom:calc(56px + env(safe-area-inset-bottom))}
   .view{padding:12px 10px}
-  #rs-grid{grid-template-columns:1fr !important}
 
   /* Cases à cocher habitudes — touch-friendly */
   .habit-check{width:26px !important;height:26px !important;border-radius:6px !important;font-size:15px !important;border-width:2px !important}
@@ -233,7 +232,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .habit-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
 .habit-list{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
 .habit-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px}
-.habit-check{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .2s}
+.habit-check{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .2s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .habit-check.done{color:white}
 .habit-name{font-size:.83rem;font-weight:300;flex:1}
 .habit-streak{font-size:.68rem;color:var(--gold);font-weight:500}
@@ -318,7 +317,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <button class="nav-tab active" onclick="showView('dashboard',this)">Dashboard</button>
     <button class="nav-tab" onclick="showView('agenda',this)">Agenda</button>
     <button class="nav-tab" onclick="showView('habits',this)">Habitudes</button>
-    <button class="nav-tab" onclick="showView('rs',this)">Réseaux Sociaux</button>
     <button class="nav-tab" onclick="showView('mood',this)">Humeur</button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:8px">
@@ -333,7 +331,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   <button onclick="showView('dashboard',this)" data-view="dashboard"><span class="mn-icon">◈</span>Dashboard</button>
   <button onclick="showView('agenda',this)" data-view="agenda"><span class="mn-icon">📅</span>Agenda</button>
   <button onclick="showView('habits',this)" data-view="habits"><span class="mn-icon">✓</span>Habits</button>
-  <button onclick="showView('rs',this)" data-view="rs"><span class="mn-icon">📱</span>Réseaux</button>
   <button onclick="showView('mood',this)" data-view="mood"><span class="mn-icon">◐</span>Humeur</button>
 </nav>
 
@@ -430,12 +427,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
   </div>
 
-  <!-- Row 3 : publications de la semaine -->
-  <div class="card" style="margin-top:18px">
-    <div class="section-title">Publications cette semaine</div>
-    <div id="db-rs-week"></div>
-  </div>
-
 </div><!-- /dashboard -->
 
 
@@ -458,69 +449,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 <!-- ══════════ HABITUDES ══════════ -->
 <div class="view" id="view-habits">
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
-    <div class="habit-section">
-      <div class="section-title">Quotidiennes</div>
-      <div class="habit-list" id="habs-daily"></div>
-      <div class="add-habit-row">
-        <input type="text" id="hab-daily-in" placeholder="Nouvelle habitude…" onkeydown="if(event.key==='Enter')addHabit('daily')"/>
-        <button class="btn btn-sm" onclick="addHabit('daily')">+</button>
-      </div>
-    </div>
-    <div class="habit-section">
-      <div class="section-title">Hebdomadaires</div>
-      <div class="habit-list" id="habs-weekly"></div>
-      <div class="add-habit-row">
-        <input type="text" id="hab-weekly-in" placeholder="Nouvelle habitude…" onkeydown="if(event.key==='Enter')addHabit('weekly')"/>
-        <button class="btn btn-sm" onclick="addHabit('weekly')">+</button>
-      </div>
-    </div>
-    <div class="habit-section">
-      <div class="section-title">Mensuelles</div>
-      <div class="habit-list" id="habs-monthly"></div>
-      <div class="add-habit-row">
-        <input type="text" id="hab-monthly-in" placeholder="Nouvelle habitude…" onkeydown="if(event.key==='Enter')addHabit('monthly')"/>
-        <button class="btn btn-sm" onclick="addHabit('monthly')">+</button>
-      </div>
-    </div>
-  </div>
-  <div class="card" style="margin-top:18px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px" id="habits-groups"></div>
+  <div class="card" style="margin-top:4px">
     <div class="section-title">Calendrier du mois — habitudes quotidiennes</div>
     <div id="month-heatmap"></div>
   </div>
 </div><!-- /habits -->
 
-
-<!-- ══════════ RÉSEAUX SOCIAUX ══════════ -->
-<div class="view" id="view-rs">
-
-  <!-- Header toolbar -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--gold-l)">Planning des publications</div>
-    <div style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap">
-      <!-- Format filter -->
-      <div style="display:flex;gap:5px;align-items:center">
-        <button class="btn btn-ghost btn-sm rs-filter active" data-filter="all" onclick="setRsFilter('all',this)">Tout</button>
-        <button class="btn btn-ghost btn-sm rs-filter" data-filter="image" onclick="setRsFilter('image',this)" style="border-left:3px solid #e87fac">Image</button>
-        <button class="btn btn-ghost btn-sm rs-filter" data-filter="video" onclick="setRsFilter('video',this)" style="border-left:3px solid #7ec8e3">Vidéo</button>
-      </div>
-      <!-- Network filter -->
-      <div style="display:flex;gap:5px;align-items:center">
-        <button class="btn btn-ghost btn-sm rs-net-filter active" data-net="all" onclick="setRsNetFilter('all',this)">Tout</button>
-        <button class="btn btn-ghost btn-sm rs-net-filter" data-net="instagram" onclick="setRsNetFilter('instagram',this)">Instagram</button>
-        <button class="btn btn-ghost btn-sm rs-net-filter" data-net="tiktok" onclick="setRsNetFilter('tiktok',this)">TikTok</button>
-      </div>
-      <button class="btn btn-sm" onclick="openRsPanel()">+ Publication</button>
-    </div>
-  </div>
-
-  <!-- Stats moyennes -->
-  <div id="rs-avg-bar" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px"></div>
-
-  <!-- Publications grid -->
-  <div id="rs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;align-items:start"></div>
-
-</div><!-- /rs -->
 
 <!-- ══════════ HUMEUR ══════════ -->
 <div class="view" id="view-mood">
@@ -619,92 +554,59 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 
 
-<!-- ══ PANEL : PUBLICATION RS ══ -->
-<div class="overlay" id="rs-panel">
-  <div class="overlay-box" style="width:520px;max-height:90vh;overflow-y:auto">
-    <div class="overlay-title" id="rs-panel-title">Nouvelle publication</div>
+<!-- ══ PANEL : NOUVELLE HABITUDE ══ -->
+<div class="overlay" id="hab-panel">
+  <div class="overlay-box" style="width:400px">
+    <div class="overlay-title" id="hab-panel-title">Nouvelle habitude</div>
     <div class="form-row">
       <div class="form-col" style="flex:2">
-        <div class="form-label">Titre / Sujet</div>
-        <input type="text" id="rs-title" placeholder="Titre de la publication…"/>
+        <div class="form-label">Nom</div>
+        <input type="text" id="hab-name" placeholder="Ex : Course à pied"/>
+      </div>
+      <div class="form-col" style="flex:1">
+        <div class="form-label">Durée (min)</div>
+        <input type="number" id="hab-duration" min="0" max="480" placeholder="30"/>
       </div>
     </div>
     <div class="form-row">
       <div class="form-col">
-        <div class="form-label">Format</div>
-        <div style="display:flex;gap:8px;margin-top:2px">
-          <label style="flex:1;display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;cursor:pointer;border:1px solid var(--border);transition:all .2s" id="fmt-img-lbl">
-            <input type="radio" name="rs-format" value="image" checked style="width:auto;accent-color:#e87fac" onchange="rsFormatChange()">
-            <span style="font-size:.82rem">🖼 Image</span>
-          </label>
-          <label style="flex:1;display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;cursor:pointer;border:1px solid var(--border);transition:all .2s" id="fmt-vid-lbl">
-            <input type="radio" name="rs-format" value="video" style="width:auto;accent-color:#7ec8e3" onchange="rsFormatChange()">
-            <span style="font-size:.82rem">🎬 Vidéo</span>
-          </label>
-        </div>
+        <div class="form-label">Groupe</div>
+        <select id="hab-group">
+          <option value="sport">🏃 Sport</option>
+          <option value="sante">🩺 Santé</option>
+          <option value="soin">✨ Soin</option>
+          <option value="menage">🧹 Ménage</option>
+        </select>
       </div>
       <div class="form-col">
-        <div class="form-label">Date prévue</div>
-        <input type="date" id="rs-date"/>
+        <div class="form-label">Catégorie agenda</div>
+        <select id="hab-cat">
+          <option value="sport">🏃 Sport</option>
+          <option value="sante">🩺 Santé</option>
+          <option value="soin">✨ Soin</option>
+          <option value="loisir">Activités &amp; Loisir</option>
+          <option value="usine">Usine</option>
+          <option value="admin">Administratif</option>
+          <option value="menage">Ménage</option>
+          <option value="maison">Maison</option>
+          <option value="maquette">Maquettes &amp; Rech.</option>
+          <option value="ratinaud">Ratinaud</option>
+        </select>
       </div>
     </div>
-    <div class="form-col" style="margin-bottom:12px">
-      <div class="form-label" style="margin-bottom:7px">Réseau(x)</div>
-      <div style="display:flex;gap:10px">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.83rem;padding:7px 12px;border-radius:7px;border:1px solid var(--border);flex:1;transition:all .2s" id="net-ig-lbl">
-          <input type="checkbox" id="rs-ig" style="width:auto;accent-color:#e87fac"> 📸 Instagram
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.83rem;padding:7px 12px;border-radius:7px;border:1px solid var(--border);flex:1;transition:all .2s" id="net-tt-lbl">
-          <input type="checkbox" id="rs-tt" style="width:auto;accent-color:#7ec8e3"> 🎵 TikTok
-        </label>
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form-label">Fréquence</div>
+        <select id="hab-freq">
+          <option value="daily">Quotidienne</option>
+          <option value="weekly">Hebdomadaire</option>
+          <option value="monthly">Mensuelle</option>
+        </select>
       </div>
-    </div>
-    <div class="form-col">
-      <div class="form-label">Note (optionnel)</div>
-      <textarea id="rs-note" rows="2" placeholder="Idées, références, brief…" style="resize:none;margin-top:2px"></textarea>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-ghost" onclick="closePanel('rs-panel')">Annuler</button>
-      <button class="btn" onclick="saveRsPost()">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ PANEL : STATS PUBLICATION ══ -->
-<div class="overlay" id="rs-stats-panel">
-  <div class="overlay-box" style="width:480px">
-    <div style="height:3px;border-radius:2px;margin-bottom:14px" id="rs-stats-bar"></div>
-    <div class="overlay-title" id="rs-stats-title">Stats — 1 semaine</div>
-    <div style="font-size:.72rem;color:var(--text-m);margin-bottom:18px" id="rs-stats-meta"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
-      <div>
-        <div class="form-label" style="margin-bottom:5px">❤️ J'aime</div>
-        <input type="number" id="rs-likes" min="0" placeholder="0" oninput="rsCalcEngagement()"/>
-      </div>
-      <div>
-        <div class="form-label" style="margin-bottom:5px">💬 Commentaires</div>
-        <input type="number" id="rs-comments" min="0" placeholder="0" oninput="rsCalcEngagement()"/>
-      </div>
-      <div>
-        <div class="form-label" style="margin-bottom:5px">👁 Vues / Reach</div>
-        <input type="number" id="rs-views" min="0" placeholder="0" oninput="rsCalcEngagement()"/>
-      </div>
-      <div>
-        <div class="form-label" style="margin-bottom:5px">🔗 Partages</div>
-        <input type="number" id="rs-shares" min="0" placeholder="0" oninput="rsCalcEngagement()"/>
-      </div>
-      <div style="grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m)">📊 Taux d'engagement calculé</div>
-        <div id="rs-engagement-calc" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--gold-l)">—</div>
-      </div>
-    </div>
-    <div class="form-col" style="margin-bottom:0">
-      <div class="form-label">Notes / observations</div>
-      <textarea id="rs-stats-note" rows="2" placeholder="Ce qui a bien marché, à améliorer…" style="resize:none;margin-top:5px"></textarea>
     </div>
     <div class="form-actions">
-      <button class="btn btn-ghost" onclick="closePanel('rs-stats-panel')">Annuler</button>
-      <button class="btn" onclick="saveRsStats()">Enregistrer</button>
+      <button class="btn btn-ghost" onclick="closePanel('hab-panel')">Annuler</button>
+      <button class="btn" onclick="saveHabit()">Ajouter</button>
     </div>
   </div>
 </div>
@@ -764,6 +666,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 const CATS = {
   usine:    {label:'Usine',             color:'#7ec8e3', dim:'rgba(126,200,227,.14)'},
   loisir:   {label:'Activités & Loisir',color:'#5a9e6f', dim:'rgba(90,158,111,.14)'},
+  sport:    {label:'Sport',             color:'#c6f135', dim:'rgba(198,241,53,.13)'},
+  sante:    {label:'Santé',             color:'#00b894', dim:'rgba(0,184,148,.14)'},
+  soin:     {label:'Soin',              color:'#1a6aff', dim:'rgba(26,106,255,.14)'},
   preprs:   {label:'Prép. réseaux',     color:'#c0c0c0', dim:'rgba(192,192,192,.12)', dark:true},
   progrs:   {label:'Prog. RS',          color:'#e87fac', dim:'rgba(232,127,172,.14)'},
   maquette: {label:'Maquettes & Rech.', color:'#d95f3b', dim:'rgba(217,95,59,.14)'},
@@ -797,9 +702,12 @@ let S = {
   habits:   {daily:[], weekly:[], monthly:[]},
   habitChecks: {},
   posts:    [],   // [{id,title,format,date,networks,note,steps,stats}]
-  moods:    {},   // iso → {score:0-20, note:''}
+  moods:    {},
+  habitMins:{},
 };
-function loadS(){try{const d=localStorage.getItem(SK);if(d)S={...S,...JSON.parse(d)}}catch(e){}}
+function loadS(){try{const d=localStorage.getItem(SK);if(d)S={...S,...JSON.parse(d)}}catch(e){}
+  if(!S.habitMins) S.habitMins={};
+}
 function saveS(){try{localStorage.setItem(SK,JSON.stringify(S))}catch(e){}}
 
 // ════════════════════════════════════════
@@ -863,7 +771,6 @@ function showView(id, btn){
   if(id==='dashboard'){renderDashboard();}
   if(id==='agenda'){renderAgenda();}
   if(id==='habits'){renderHabits();}
-  if(id==='rs'){renderRS();}
   if(id==='mood'){renderMood();}
 }
 
@@ -914,7 +821,8 @@ function renderTimeline(){
   const rail=document.getElementById('tl-rail');
   const wrap=document.getElementById('tl-wrap');
   const today=todayISO();
-  const evs=(S.events[today]||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));
+  const habEvs2=getHabitEventsForDate(today).map(function(m){return {cat:m.cat,start:'00',end:String(m.duration),title:'[Habitude]'};});
+  const evs=[...(S.events[today]||[]),...habEvs2].sort((a,b)=>a.start.localeCompare(b.start));
   const now=new Date();
   const nowMin=now.getHours()*60+now.getMinutes();
   const totalW=(TL_END-TL_START)*60*TL_PPM+48;
@@ -990,60 +898,8 @@ function renderDashboard(){
   renderWeekMini();
   renderDonut();
   renderDashStats();
-  renderDashRs();
 }
 
-function renderDashRs(){
-  const el=document.getElementById('db-rs-week');
-  if(!el) return;
-  const ws=weekStart(0), we=addDays(ws,6);
-  const wsIso=toISO(ws), weIso=toISO(we);
-  const todayIso=todayISO();
-  const posts=(S.posts||[]).filter(p=>{
-    if(!p.date) return false;
-    return p.date>=wsIso && p.date<=weIso;
-  }).sort((a,b)=>a.date.localeCompare(b.date));
-
-  if(!posts.length){
-    el.innerHTML='<div style="font-size:.78rem;color:var(--text-m);font-style:italic;padding:4px 0">Aucune publication prévue cette semaine.</div>';
-    return;
-  }
-
-  const steps_count=p=>{
-    const steps=RS_STEPS[p.format]||[];
-    const done=steps.filter(s=>(p.steps||{})[s.id]==='done').length;
-    return {done,total:steps.length};
-  };
-
-  const dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-
-  el.innerHTML=posts.map(p=>{
-    const fc=p.format==='image'?'#e87fac':'#7ec8e3';
-    const {done,total}=steps_count(p);
-    const pct=total?Math.round(done/total*100):0;
-    const isComplete=done===total&&total>0;
-    const isPast=p.date<todayIso;
-    const isToday=p.date===todayIso;
-    const d=new Date(p.date+'T12:00:00');
-    const dayLbl=isToday?"Aujourd'hui":dayNames[d.getDay()]+' '+d.getDate();
-    const nets=(p.networks||[]).map(n=>n==='instagram'?'📸':'🎵').join(' ');
-    const statusColor=isComplete?'#5a9e6f':isPast?'#d95f3b':'var(--text-m)';
-    const statusTxt=isComplete?'Publié ✓':isPast?'En retard':'À faire';
-
-    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--border);opacity:${isComplete?0.45:1}">
-      <div style="width:72px;flex-shrink:0;font-size:.72rem;font-weight:500;color:${isToday?'var(--gold-l)':'var(--text-m)'}">${dayLbl}</div>
-      <span class="rs-format-badge ${p.format==='image'?'rs-img':'rs-vid'}" style="font-size:.58rem;padding:1px 6px;flex-shrink:0">${p.format==='image'?'Image':'Vidéo'}</span>
-      <span style="font-size:.68rem;flex-shrink:0">${nets}</span>
-      <div style="flex:1;min-width:0;font-size:.82rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.title)}</div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-        <div style="width:44px;height:2px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${isComplete?'#5a9e6f':fc}"></div>
-        </div>
-        <span style="font-size:.62rem;color:${statusColor};white-space:nowrap;min-width:52px;text-align:right">${statusTxt}</span>
-      </div>
-    </div>`;
-  }).join('')+'<div style="text-align:right;margin-top:8px"><button class="btn btn-ghost btn-sm" style="font-size:.65rem" onclick="goToRS()">Voir tout →</button></div>';
-}
 
 function renderWeekMini(){
   const ws=weekStart(0), today=todayISO();
@@ -1067,9 +923,18 @@ function renderDonut(){
   const tot={}; CAT_KEYS.forEach(k=>tot[k]=0); let grand=0;
   for(let i=0;i<7;i++){
     const iso=toISO(addDays(ws,i));
+    // Événements agenda
     (S.events[iso]||[]).forEach(e=>{
       const d=(toMin(e.end)-toMin(e.start))/60;
       if(d>0&&CATS[e.cat]){tot[e.cat]+=d;grand+=d;}
+    });
+    // Habitudes cochées (durée directe en minutes)
+    getHabitEventsForDate(iso).forEach(function(m){
+      const d=m.duration/60;
+      if(d>0){
+        const c=m.cat&&CATS[m.cat]?m.cat:CAT_KEYS[0];
+        tot[c]+=d; grand+=d;
+      }
     });
   }
   document.getElementById('dn-total').textContent=grand>0?`${grand.toFixed(1)}h`:'0h';
@@ -1093,11 +958,19 @@ function renderDonut(){
 
 function renderDashStats(){
   const today=todayISO();
-  const evs=(S.events[today]||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));
   const catH={}; CAT_KEYS.forEach(k=>catH[k]=0); let totalH=0;
-  evs.forEach(e=>{
+  // Événements agenda
+  (S.events[today]||[]).forEach(function(e){
     const d=(toMin(e.end)-toMin(e.start))/60;
     if(d>0&&CATS[e.cat]){catH[e.cat]+=d;totalH+=d;}
+  });
+  // Habitudes cochées aujourd'hui
+  getHabitEventsForDate(today).forEach(function(m){
+    const d=m.duration/60;
+    if(d>0){
+      const c=m.cat&&CATS[m.cat]?m.cat:CAT_KEYS[0];
+      catH[c]+=d; totalH+=d;
+    }
   });
   // Cat bars
   const barsEl=document.getElementById('today-cat-bars');
@@ -1114,6 +987,7 @@ function renderDashStats(){
     </div>`;}).join('')
     :`<div style="color:var(--text-m);font-size:.78rem;font-style:italic">Aucun créneau aujourd'hui</div>`;
   // Totals
+  const evs=(S.events[today]||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));
   const allH=[...S.habits.daily,...S.habits.weekly,...S.habits.monthly];
   let hDone=0; allH.forEach(h=>{if(S.habitChecks[`${h.freq}:${h.id}:${today}`])hDone++;});
   document.getElementById('st-slots').textContent=evs.length;
@@ -1347,92 +1221,233 @@ function monthlyKey(id, d){
   return `monthly:${id}:${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 
+const HABIT_GROUPS = {
+  sport: {label:'🏃 Sport', color:'#7ec8e3'},
+  sante: {label:'🩺 Santé', color:'#5a9e6f'},
+  soin:  {label:'✨ Soin',  color:'#e87fac'},
+  menage:{label:'🧹 Ménage',color:'#8b5e3c'},
+};
+const HABIT_GROUP_KEYS = ['sport','sante','soin','menage'];
+
 function renderHabits(){
-  const today = new Date();
-  const todayStr = todayISO();
-  const fc_d=FREQ_COLORS.daily, fc_w=FREQ_COLORS.weekly, fc_m=FREQ_COLORS.monthly;
-
-  // ── DAILY ──
-  const elD=document.getElementById('habs-daily');
-  elD.innerHTML=S.habits.daily.map(h=>{
-    const done=!!S.habitChecks[`daily:${h.id}:${todayStr}`];
-    const streak=calcStreak(h.id);
-    return `<div class="habit-row">
-      <div class="habit-check${done?' done':''}" style="${done?`background:${fc_d};border-color:${fc_d}`:''}"
-        onclick="toggleHabitDaily('${h.id}')">${done?'✓':''}</div>
-      <div class="habit-name" style="${done?'text-decoration:line-through;opacity:.45':''}">${esc(h.name)}</div>
-      ${streak>1?`<div class="habit-streak">🔥${streak}</div>`:''}
-      <span class="freq-badge" style="color:${fc_d};background:${FREQ_BG.daily}">Quotidien</span>
-      <button class="habit-del" onclick="deleteHabit('daily','${h.id}')">×</button>
-    </div>`;
-  }).join('');
-
-  // ── WEEKLY — 5 checkboxes (W1..W5 of current month) ──
-  // ── WEEKLY — 5 checkboxes, stay checked 7 days from check date ──
-  const elW=document.getElementById('habs-weekly');
-  const yr=today.getFullYear(), mo=today.getMonth();
-  const moLabel=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'][mo];
-  const nowMs=today.getTime();
-  elW.innerHTML=S.habits.weekly.map(h=>{
-    const checks=[1,2,3,4,5].map(wk=>{
-      const key=`weekly:${h.id}:${yr}-${String(mo+1).padStart(2,'0')}-W${wk}`;
-      const checkedAt=S.habitChecks[key]; // ISO date string or bool(legacy)
-      let done=false, daysLeft=0;
-      if(checkedAt){
-        if(checkedAt===true){ done=true; } // legacy bool
-        else {
-          const ms=new Date(checkedAt+'T12:00:00').getTime();
-          const diffDays=Math.floor((nowMs-ms)/86400000);
-          done=diffDays<7;
-          daysLeft=Math.max(0,7-diffDays);
-        }
-      }
-      const title=done?`Semaine ${wk} — encore ${daysLeft}j`:`Semaine ${wk}`;
-      return `<div class="habit-check${done?' done':''}" style="width:18px;height:18px;${done?`background:${fc_w};border-color:${fc_w}`:''}"
-        title="${title}"
-        onclick="toggleHabitWeekly('${h.id}',${yr},${mo+1},${wk})">${done?'✓':''}</div>`;
-    }).join('');
-    return `<div class="habit-row" style="flex-wrap:wrap;gap:8px">
-      <div class="habit-name" style="flex:1;min-width:120px">${esc(h.name)}</div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-        <span style="font-size:.6rem;color:var(--text-m);letter-spacing:.06em">${moLabel}</span>
-        ${checks}
-      </div>
-      <span class="freq-badge" style="color:${fc_w};background:${FREQ_BG.weekly};flex-shrink:0">Hebdo</span>
-      <button class="habit-del" onclick="deleteHabit('weekly','${h.id}')">×</button>
-    </div>`;
-  }).join('');
-
-  // ── MONTHLY — single checkbox, stays checked 30 days from check date ──
-  const elM=document.getElementById('habs-monthly');
-  const moStr=String(mo+1).padStart(2,'0');
-  const moFull=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][mo];
-  elM.innerHTML=S.habits.monthly.map(h=>{
-    const key=`monthly:${h.id}:${yr}-${moStr}`;
-    const checkedAt=S.habitChecks[key];
-    let done=false, daysLeft=0;
-    if(checkedAt){
-      if(checkedAt===true){ done=true; }
-      else {
-        const ms=new Date(checkedAt+'T12:00:00').getTime();
-        const diffDays=Math.floor((nowMs-ms)/86400000);
-        done=diffDays<30;
-        daysLeft=Math.max(0,30-diffDays);
-      }
-    }
-    const subtitle=done?`encore ${daysLeft}j`:moFull;
-    return `<div class="habit-row">
-      <div class="habit-check${done?' done':''}" style="${done?`background:${fc_m};border-color:${fc_m}`:''}"
-        onclick="toggleHabitMonthly('${h.id}')" title="${done?`Coché — encore ${daysLeft}j`:'Cocher'}">${done?'✓':''}</div>
-      <div class="habit-name" style="${done?'text-decoration:line-through;opacity:.45':''}">${esc(h.name)}</div>
-      <span style="font-size:.7rem;color:var(--text-m)">${subtitle}</span>
-      <span class="freq-badge" style="color:${fc_m};background:${FREQ_BG.monthly}">Mensuel</span>
-      <button class="habit-del" onclick="deleteHabit('monthly','${h.id}')">×</button>
-    </div>`;
-  }).join('');
-
+  const today=todayISO();
+  const container=document.getElementById('habits-groups');
+  if(!container) return;
+  const allH=[...(S.habits.daily||[]),...(S.habits.weekly||[]),...(S.habits.monthly||[])];
+  let html='';
+  HABIT_GROUP_KEYS.forEach(function(grp){
+    const g=HABIT_GROUPS[grp];
+    const habits=allH.filter(function(h){return (h.group||'sport')===grp;});
+    html+='<div class="card" style="padding:14px 16px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
+    html+='<div style="width:3px;height:16px;border-radius:2px;background:'+g.color+'"></div>';
+    html+='<div class="section-title" style="margin:0">'+g.label+'</div>';
+    html+='<button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:.62rem" onclick="openHabPanel(\''+grp+'\')">+ Ajouter</button>';
+    html+='</div>';
+    if(!habits.length) html+='<div style="font-size:.72rem;color:var(--text-m);font-style:italic">Aucune habitude</div>';
+    habits.forEach(function(h){ html+=renderHabitRow(h,today,g.color); });
+    html+='</div>';
+  });
+  container.innerHTML=html;
   renderMonthMap();
 }
+
+function renderHabitRow(h,today,color){
+  const freq=h.freq||'daily';
+  const catColor=h.cat&&CATS[h.cat]?CATS[h.cat].color:color;
+  const catLabel=h.cat&&CATS[h.cat]?CATS[h.cat].label:'';
+  const nd=new Date(),yr=nd.getFullYear(),mo=nd.getMonth();
+  const moStr=String(mo+1).padStart(2,'0');
+  const dur=h.duration||0;
+  const cat=h.cat||'';
+
+  let row='<div style="border-bottom:1px solid var(--border);padding:9px 2px">';
+  row+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+  row+='<div class="habit-name" style="flex:1;min-width:0">'+esc(h.name)+'</div>';
+  if(dur) row+='<span style="font-size:.58rem;color:var(--text-m);background:var(--surface);border-radius:4px;padding:1px 5px">⏱ '+dur+'min</span>';
+  if(catLabel) row+='<span style="font-size:.58rem;color:'+catColor+';background:var(--surface);border-radius:4px;padding:1px 5px">'+catLabel+'</span>';
+  row+='<button class="hab-edit-btn" data-id="'+h.id+'" data-freq="'+freq+'" style="background:none;border:none;color:var(--text-m);cursor:pointer;font-size:.85rem;opacity:.5;padding:4px 6px;touch-action:manipulation" title="Modifier">✎</button>';
+  row+='<button class="hab-del-btn" data-id="'+h.id+'" data-freq="'+freq+'" style="background:none;border:none;color:#d95f3b;cursor:pointer;font-size:1rem;opacity:.5;padding:4px 6px;touch-action:manipulation" title="Supprimer">×</button>';
+  row+='</div>';
+
+  if(freq==='daily'){
+    const done=!!S.habitChecks['daily:'+h.id+':'+today];
+    const streak=calcStreak(h.id);
+    const cs=done?'background:'+catColor+';border-color:'+catColor+';color:#000':'';
+    row+='<div style="display:flex;align-items:center;gap:10px">';
+    row+='<div class="habit-check'+(done?' done':'')+' hab-toggle" data-id="'+h.id+'" data-freq="daily" data-cat="'+cat+'" data-dur="'+dur+'" style="'+cs+'">'+(done?'✓':'')+'</div>';
+    if(streak>1) row+='<span class="habit-streak">🔥 '+streak+'j</span>';
+    row+='</div>';
+
+  } else if(freq==='weekly'){
+    row+='<div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap">';
+    for(let wk=1;wk<=5;wk++){
+      const k='weekly:'+h.id+':'+yr+'-'+moStr+'-W'+wk;
+      const v=S.habitChecks[k];
+      let wkDone=false,rem=0;
+      if(v){const age=(new Date()-new Date(v+'T12:00:00'))/(864e5);wkDone=age<7;rem=Math.ceil(7-age);}
+      const isCur=wk===getWeekOfMonth(yr,mo);
+      const ws=wkDone?'background:'+catColor+';border-color:'+catColor+';color:#000':(isCur?'border-color:'+catColor:'');
+      row+='<div style="display:flex;flex-direction:column;align-items:center;gap:2px">';
+      row+='<div style="font-size:.52rem;color:'+(isCur?'var(--gold-l)':'var(--text-m)')+';pointer-events:none">S'+wk+'</div>';
+      row+='<div class="habit-check'+(wkDone?' done':'')+' hab-toggle-wk" data-id="'+h.id+'" data-yr="'+yr+'" data-mo="'+mo+'" data-wk="'+wk+'" data-cat="'+cat+'" data-dur="'+dur+'" style="'+ws+'">'+(wkDone?'✓':'')+'</div>';
+      if(wkDone&&rem>0) row+='<div style="font-size:.48rem;color:var(--text-m);pointer-events:none">'+rem+'j</div>';
+      row+='</div>';
+    }
+    row+='</div>';
+
+  } else {
+    const k='monthly:'+h.id+':'+yr+'-'+moStr;
+    const v=S.habitChecks[k];
+    let mDone=false,rem=0;
+    if(v){const age=(new Date()-new Date(v+'T12:00:00'))/(864e5);mDone=age<30;rem=Math.ceil(30-age);}
+    const ms=mDone?'background:'+catColor+';border-color:'+catColor+';color:#000':'';
+    row+='<div style="display:flex;align-items:center;gap:10px">';
+    row+='<div class="habit-check'+(mDone?' done':'')+' hab-toggle-mo" data-id="'+h.id+'" data-cat="'+cat+'" data-dur="'+dur+'" style="'+ms+'">'+(mDone?'✓':'')+'</div>';
+    if(mDone&&rem>0) row+='<span style="font-size:.68rem;color:var(--text-m);pointer-events:none">encore '+rem+'j</span>';
+    row+='</div>';
+  }
+
+  row+='</div>';
+  return row;
+}
+
+
+
+function toggleHabitWeeklyN(id,yr,mo,wk,cat,duration){
+  const today2=todayISO();
+  const k='weekly:'+id+':'+yr+'-'+String(mo+1).padStart(2,'0')+'-W'+wk;
+  const v=S.habitChecks[k];
+  let wasDone=false;
+  if(v) wasDone=(new Date()-new Date(v+'T12:00:00'))/(864e5)<7;
+  S.habitChecks[k]=wasDone?null:today2;
+  if(!S.habitMins) S.habitMins={};
+  if(!S.habitMins[today2]) S.habitMins[today2]={};
+  if(!wasDone&&duration>0){ S.habitMins[today2][id+'_w'+wk]={duration:duration,cat:cat||CAT_KEYS[0]}; }
+  else { delete S.habitMins[today2][id+'_w'+wk]; }
+  saveS(); renderHabits(); renderDashboard();
+}
+
+function toggleHabitMonthlyN(id,cat,duration){
+  const today2=todayISO();
+  const d=new Date(),yr=d.getFullYear(),mo=d.getMonth();
+  const k='monthly:'+id+':'+yr+'-'+String(mo+1).padStart(2,'0');
+  const v=S.habitChecks[k];
+  let wasDone=false;
+  if(v) wasDone=(new Date()-new Date(v+'T12:00:00'))/(864e5)<30;
+  S.habitChecks[k]=wasDone?null:today2;
+  if(!S.habitMins) S.habitMins={};
+  if(!S.habitMins[today2]) S.habitMins[today2]={};
+  if(!wasDone){ if(duration>0) S.habitMins[today2][id+'_m']={duration:duration,cat:cat||CAT_KEYS[0]}; }
+  else { delete S.habitMins[today2][id+'_m']; }
+  saveS(); renderHabits(); renderDashboard();
+}
+function getWeekOfMonth(yr,mo){
+  const firstDow=new Date(yr,mo,1).getDay();
+  const off=firstDow===0?6:firstDow-1;
+  return Math.ceil((new Date().getDate()+off)/7);
+}
+
+let _habPanelGroup='sport';
+function openHabPanel(grp){
+  _habEditId=null; _habEditFreq=null;
+  _habPanelGroup=grp||'sport';
+  document.getElementById('hab-panel-title').textContent='Nouvelle habitude — '+HABIT_GROUPS[_habPanelGroup].label;
+  document.getElementById('hab-group').value=_habPanelGroup;
+  document.getElementById('hab-name').value='';
+  document.getElementById('hab-duration').value='';
+  document.getElementById('hab-freq').value='daily';
+  document.getElementById('hab-cat').value='loisir';
+  openPanel('hab-panel');
+}
+
+let _habEditId=null, _habEditFreq=null;
+
+function openHabPanelEdit(id,freq){
+  // Find habit
+  const h=(S.habits[freq]||[]).find(function(h){return h.id===id;});
+  if(!h) return;
+  _habEditId=id; _habEditFreq=freq;
+  document.getElementById('hab-panel-title').textContent='Modifier l\'habitude';
+  document.getElementById('hab-name').value=h.name;
+  document.getElementById('hab-duration').value=h.duration||'';
+  document.getElementById('hab-group').value=h.group||'sport';
+  document.getElementById('hab-cat').value=h.cat||'loisir';
+  document.getElementById('hab-freq').value=h.freq||'daily';
+  openPanel('hab-panel');
+}
+
+function saveHabit(){
+  const name=document.getElementById('hab-name').value.trim();
+  if(!name) return;
+  const freq=document.getElementById('hab-freq').value;
+  const grp=document.getElementById('hab-group').value;
+  const dur=parseInt(document.getElementById('hab-duration').value)||0;
+  const cat=document.getElementById('hab-cat').value;
+
+  if(_habEditId){
+    // Mode édition — trouver et mettre à jour
+    const oldFreq=_habEditFreq;
+    // Retirer de l'ancienne fréquence
+    S.habits[oldFreq]=(S.habits[oldFreq]||[]).filter(function(h){return h.id!==_habEditId;});
+    // Ajouter dans la nouvelle (freq peut avoir changé)
+    if(!S.habits[freq]) S.habits[freq]=[];
+    S.habits[freq].push({id:_habEditId,name:name,freq:freq,group:grp,duration:dur,cat:cat});
+    _habEditId=null; _habEditFreq=null;
+  } else {
+    // Mode création
+    const h={id:'h'+Date.now(),name:name,freq:freq,group:grp,duration:dur,cat:cat};
+    if(!S.habits[freq]) S.habits[freq]=[];
+    S.habits[freq].push(h);
+  }
+  saveS(); closePanel('hab-panel'); renderHabits();
+}
+
+function deleteHabit(id,freq){
+  // Double-clic protection : marquer visuellement puis supprimer au 2e clic
+  const el=document.querySelector('.hab-del-btn[data-id="'+id+'"]');
+  if(!el) return;
+  if(el.dataset.confirm!=='1'){
+    el.textContent='?'; el.dataset.confirm='1'; el.style.color='#d95f3b'; el.style.opacity='1';
+    setTimeout(function(){ if(el.dataset.confirm==='1'){el.textContent='×';el.dataset.confirm='';el.style.opacity='.5';} },2000);
+    return;
+  }
+  S.habits[freq]=(S.habits[freq]||[]).filter(function(h){return h.id!==id;});
+  if(S.habitMins) Object.keys(S.habitMins).forEach(function(iso){if(S.habitMins[iso])delete S.habitMins[iso][id];});
+  saveS(); renderHabits();
+}
+
+function toggleHabitItem(id,freq,cat,duration){
+  const today2=todayISO();
+  const k='daily:'+id+':'+today2;
+  const wasDone=!!S.habitChecks[k];
+  S.habitChecks[k]=!wasDone;
+  if(!S.habitMins) S.habitMins={};
+  if(!S.habitMins[today2]) S.habitMins[today2]={};
+  if(!wasDone&&duration>0){ S.habitMins[today2][id]={duration:duration,cat:cat}; }
+  else { delete S.habitMins[today2][id]; }
+  saveS(); renderHabits(); renderDashboard();
+}
+function toggleHabitDailyByIso(id,iso){
+  const k='daily:'+id+':'+iso;
+  const wasDone=!!S.habitChecks[k];
+  S.habitChecks[k]=!wasDone;
+  // Find habit to get duration and cat
+  const h=(S.habits.daily||[]).find(function(h){return h.id===id;});
+  if(h&&h.duration>0){
+    if(!S.habitMins) S.habitMins={};
+    if(!S.habitMins[iso]) S.habitMins[iso]={};
+    if(!wasDone){ S.habitMins[iso][id]={duration:h.duration,cat:h.cat}; }
+    else { delete S.habitMins[iso][id]; }
+  }
+  saveS(); renderHabits(); renderDashboard();
+}
+
+function getHabitEventsForDate(iso){
+  if(!S.habitMins||!S.habitMins[iso]) return [];
+  return Object.values(S.habitMins[iso]).filter(function(m){return m.duration>0;});
+}
+
 
 function calcStreak(id){
   let s=0, d=new Date();
@@ -1442,51 +1457,6 @@ function calcStreak(id){
     d.setDate(d.getDate()-1);
   }
   return s;
-}
-
-function toggleHabitDaily(id){
-  const k=`daily:${id}:${todayISO()}`;
-  S.habitChecks[k]=!S.habitChecks[k];
-  saveS(); renderHabits(); renderDashStats();
-}
-function toggleHabitWeekly(id, yr, mo, wk){
-  const k=`weekly:${id}:${yr}-${String(mo).padStart(2,'0')}-W${wk}`;
-  const cur=S.habitChecks[k];
-  // If already checked and within 7d window → uncheck; otherwise store today
-  if(cur && cur!==true){
-    const diffDays=Math.floor((new Date().getTime()-new Date(cur+'T12:00:00').getTime())/86400000);
-    if(diffDays<7){ S.habitChecks[k]=null; } else { S.habitChecks[k]=todayISO(); }
-  } else {
-    S.habitChecks[k]=cur?null:todayISO();
-  }
-  saveS(); renderHabits();
-}
-function toggleHabitMonthly(id){
-  const n=new Date();
-  const k=`monthly:${id}:${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
-  const cur=S.habitChecks[k];
-  if(cur && cur!==true){
-    const diffDays=Math.floor((new Date().getTime()-new Date(cur+'T12:00:00').getTime())/86400000);
-    if(diffDays<30){ S.habitChecks[k]=null; } else { S.habitChecks[k]=todayISO(); }
-  } else {
-    S.habitChecks[k]=cur?null:todayISO();
-  }
-  saveS(); renderHabits();
-}
-function addHabit(freq){
-  const inp=document.getElementById(`hab-${freq}-in`);
-  const name=inp.value.trim(); if(!name)return;
-  S.habits[freq].push({id:Date.now().toString(36),name,freq});
-  inp.value=''; saveS(); renderHabits();
-}
-function deleteHabit(freq,id){
-  S.habits[freq]=S.habits[freq].filter(h=>h.id!==id);
-  saveS(); renderHabits();
-}
-function toggleHabitDate(freq,id,iso){
-  const k=`${freq}:${id}:${iso}`;
-  S.habitChecks[k]=!S.habitChecks[k];
-  saveS(); renderHabits();
 }
 
 function renderMonthMap(){
@@ -1509,7 +1479,7 @@ function renderMonthMap(){
       const fc=FREQ_COLORS.daily;
       html+=`<div class="month-cell${done?' filled':''}${isT?' today-cell':''}"
         style="${done?`background:${fc};border-color:${fc};color:var(--bg)`:''}"
-        onclick="toggleHabitDate('daily','${h.id}','${iso}')">${day}</div>`;
+        onclick="toggleHabitDailyByIso('${h.id}','${iso}')">${day}</div>`;
     }
     html+=`</div></div>`;
   });
@@ -1526,399 +1496,6 @@ function renderMonthMap(){
 // ════════════════════════════════════════
 // RÉSEAUX SOCIAUX
 // ════════════════════════════════════════
-const RS_STEPS = {
-  image: [
-    {id:'img_shot',    label:'Prise d\'image'},
-    {id:'img_redac',   label:'Rédaction publication'},
-    {id:'img_legend',  label:'Rédaction légende'},
-    {id:'img_prog',    label:'Programmation'},
-    {id:'img_pub',     label:'Publié ✓'},
-  ],
-  video: [
-    {id:'vid_shot',    label:'Prise de vidéo'},
-    {id:'vid_montage', label:'Montage'},
-    {id:'vid_voix',    label:'Voix off'},
-    {id:'vid_claude',  label:'Analyse avec Claude'},
-    {id:'vid_retouche',label:'Retouche'},
-    {id:'vid_import',  label:'Importation'},
-    {id:'vid_legend',  label:'Rédaction légende'},
-    {id:'vid_prog',    label:'Programmation'},
-    {id:'vid_pub',     label:'Publié ✓'},
-  ]
-};
-
-let _rsFilterFmt = 'all', _rsFilterNet = 'all';
-let _rsEditId = null; // null = new post, else post id being edited
-
-function setRsFilter(val, btn){
-  _rsFilterFmt=val;
-  document.querySelectorAll('.rs-filter').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderRS();
-}
-function setRsNetFilter(val, btn){
-  _rsFilterNet=val;
-  document.querySelectorAll('.rs-net-filter').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderRS();
-}
-
-function renderRS(){
-  if(!S.posts) S.posts=[];
-  renderRsAvg();
-  const grid=document.getElementById('rs-grid');
-  let posts=[...S.posts].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
-  if(_rsFilterFmt!=='all') posts=posts.filter(p=>p.format===_rsFilterFmt);
-  if(_rsFilterNet!=='all') posts=posts.filter(p=>p.networks&&p.networks.includes(_rsFilterNet));
-  if(!posts.length){
-    grid.innerHTML=`<div style="color:var(--text-m);font-size:.88rem;font-style:italic;padding:24px;text-align:center">Aucune publication — cliquez sur "+ Publication" pour commencer.</div>`;
-    return;
-  }
-  grid.innerHTML=posts.map(p=>renderRsCard(p)).join('');
-}
-
-// ── Avg / charts ──────────────────────────────────
-function renderRsAvg(){
-  const bar=document.getElementById('rs-avg-bar');
-  const allPosts=(S.posts||[]).filter(p=>p.stats&&(p.stats.likes!=null||p.stats.views!=null));
-  if(!allPosts.length){bar.innerHTML='';return;}
-
-  const year=new Date().getFullYear();
-  const MONTHS_SHORT=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
-  const nets=['instagram','tiktok'];
-  const netColors={instagram:'#e87fac',tiktok:'#7ec8e3'};
-  const netNames={instagram:'Instagram',tiktok:'TikTok'};
-  const metrics=['likes','comments','views','shares'];
-  const metricLabels={likes:"J'aime",comments:'Commentaires',views:'Vues',shares:'Partages'};
-
-  // Build month buckets per network per metric
-  // monthData[net][mo] = {sum, count} for each metric
-  const monthData={};
-  nets.forEach(n=>{
-    monthData[n]={};
-    metrics.forEach(m=>{
-      monthData[n][m]=Array.from({length:12},()=>({sum:0,count:0}));
-    });
-    monthData[n].engagement=Array.from({length:12},()=>({sum:0,count:0}));
-  });
-
-  allPosts.forEach(p=>{
-    if(!p.date) return;
-    const d=new Date(p.date+'T12:00:00');
-    if(d.getFullYear()!==year) return;
-    const mo=d.getMonth();
-    const st=p.stats;
-    (p.networks||[]).forEach(n=>{
-      if(!monthData[n]) return;
-      metrics.forEach(m=>{
-        const v=st[m]; if(v==null||isNaN(v)) return;
-        monthData[n][m][mo].sum+=v;
-        monthData[n][m][mo].count++;
-      });
-      // engagement = (likes+comments+shares) / views * 100
-      if(st.views>0&&st.likes!=null){
-        const eng=((st.likes||0)+(st.comments||0)+(st.shares||0))/st.views*100;
-        monthData[n].engagement[mo].sum+=eng;
-        monthData[n].engagement[mo].count++;
-      }
-    });
-  });
-
-  // Global averages per network
-  function globalAvg(n, m){
-    const buckets=monthData[n][m];
-    let sum=0,cnt=0;
-    buckets.forEach(b=>{sum+=b.sum;cnt+=b.count;});
-    return cnt>0?(sum/cnt):null;
-  }
-
-  // Summary cards
-  const summaryHTML=nets.map(n=>{
-    const fc=netColors[n];
-    const postsN=allPosts.filter(p=>p.networks&&p.networks.includes(n));
-    if(!postsN.length) return '';
-    const avgLikes=globalAvg(n,'likes'), avgComments=globalAvg(n,'comments');
-    const avgViews=globalAvg(n,'views'), avgShares=globalAvg(n,'shares');
-    const avgEng=globalAvg(n,'engagement');
-    const fmt=v=>v==null?'—':v>=1000?(v/1000).toFixed(1)+'k':Math.round(v).toString();
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;border-top:3px solid ${fc}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${fc}"></div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;color:var(--gold-l)">${netNames[n]}</div>
-        <div style="font-size:.68rem;color:var(--text-m);margin-left:auto">${postsN.length} publication${postsN.length>1?'s':''} · ${year}</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
-        ${[['❤️',"J'aime",fmt(avgLikes)],['💬','Commentaires',fmt(avgComments)],['👁','Vues',fmt(avgViews)],['🔗','Partages',fmt(avgShares)],['📊','Engagement',avgEng!=null?avgEng.toFixed(1)+'%':'—']].map(([ico,lbl,val])=>`
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 8px;text-align:center">
-            <div style="font-size:.9rem;margin-bottom:3px">${ico}</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:${fc};line-height:1">${val}</div>
-            <div style="font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-m);margin-top:3px">${lbl}</div>
-          </div>`).join('')}
-      </div>
-      ${rsLineChart(monthData[n], MONTHS_SHORT, fc, n)}
-    </div>`;
-  }).join('');
-
-  bar.innerHTML=summaryHTML||'';
-}
-
-function rsLineChart(data, labels, color, netId){
-  // Draw SVG sparklines for likes and views over 12 months
-  const W=480, H=90, PAD={t:18,r:10,b:22,l:38};
-  const IW=W-PAD.l-PAD.r, IH=H-PAD.t-PAD.b;
-  const metrics2=[['likes',"J'aime",color],['views','Vues',color+'99']];
-
-  function avgArr(metric){
-    return data[metric].map(b=>b.count>0?b.sum/b.count:null);
-  }
-
-  const series=metrics2.map(([m,lbl,c])=>({vals:avgArr(m),label:lbl,color:c}));
-  const allVals=series.flatMap(s=>s.vals.filter(v=>v!=null));
-  if(!allVals.length) return `<div style="font-size:.72rem;color:var(--text-m);font-style:italic;text-align:center;padding:8px">Pas encore de données pour le graphique.</div>`;
-
-  const maxV=Math.max(...allVals)*1.15||1;
-  const minV=0;
-  const xStep=IW/11;
-
-  function px(i){return PAD.l+i*xStep;}
-  function py(v){return PAD.t+IH-(v-minV)/(maxV-minV)*IH;}
-
-  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;margin-top:4px">`;
-
-  // Grid lines
-  [0,0.25,0.5,0.75,1].forEach(f=>{
-    const y=PAD.t+IH*(1-f);
-    const v=Math.round(minV+(maxV-minV)*f);
-    const lbl=v>=1000?(v/1000).toFixed(1)+'k':v.toString();
-    svg+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
-    svg+=`<text x="${PAD.l-4}" y="${y+4}" text-anchor="end" font-size="7" fill="rgba(255,255,255,.25)">${lbl}</text>`;
-  });
-
-  // Month labels
-  labels.forEach((m,i)=>{
-    svg+=`<text x="${px(i)}" y="${H-4}" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.3)">${m}</text>`;
-  });
-
-  // Series lines + dots
-  series.forEach(s=>{
-    const pts=s.vals.map((v,i)=>v!=null?[px(i),py(v)]:null);
-    // polyline segments (skip nulls)
-    let path=''; let inSeg=false;
-    pts.forEach((pt,i)=>{
-      if(pt){
-        path+=(inSeg?'L':'M')+pt[0].toFixed(1)+' '+pt[1].toFixed(1)+' ';
-        inSeg=true;
-      } else { inSeg=false; }
-    });
-    if(path) svg+=`<path d="${path}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
-    // dots + tooltips
-    pts.forEach((pt,i)=>{
-      if(pt){
-        const raw=s.vals[i], lbl=raw>=1000?(raw/1000).toFixed(1)+'k':Math.round(raw).toString();
-        svg+=`<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="3" fill="${s.color}" stroke="var(--bg,#0c0b09)" stroke-width="1.5">
-          <title>${s.label} · ${labels[i]} : ${lbl}</title>
-        </circle>`;
-      }
-    });
-  });
-
-  // Legend
-  const legendX=PAD.l;
-  series.forEach((s,i)=>{
-    svg+=`<rect x="${legendX+i*70}" y="4" width="10" height="2" rx="1" fill="${s.color}"/>`;
-    svg+=`<text x="${legendX+i*70+14}" y="8" font-size="7" fill="${s.color}">${s.label}</text>`;
-  });
-  // engagement line
-  const engVals=data.engagement.map(b=>b.count>0?b.sum/b.count:null);
-  const hasEng=engVals.some(v=>v!=null);
-  if(hasEng){
-    // draw on secondary axis (right), scale 0-100%
-    const engColor='#c9a84c';
-    const engPts=engVals.map((v,i)=>v!=null?[px(i), PAD.t+IH-(Math.min(v,100)/100)*IH]:null);
-    let epath=''; let inE=false;
-    engPts.forEach(pt=>{ if(pt){epath+=(inE?'L':'M')+pt[0].toFixed(1)+' '+pt[1].toFixed(1)+' ';inE=true;}else{inE=false;} });
-    if(epath) svg+=`<path d="${epath}" fill="none" stroke="${engColor}" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>`;
-    engPts.forEach((pt,i)=>{ if(pt){svg+=`<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="2.5" fill="${engColor}" stroke="var(--bg,#0c0b09)" stroke-width="1.2"><title>Engagement · ${labels[i]} : ${engVals[i].toFixed(1)}%</title></circle>`;} });
-    svg+=`<rect x="${legendX+series.length*70}" y="4" width="10" height="2" rx="1" fill="${engColor}" style="stroke-dasharray:3 2"/>`;
-    svg+=`<text x="${legendX+series.length*70+14}" y="8" font-size="7" fill="${engColor}">Engagement %</text>`;
-  }
-
-  svg+=`</svg>`;
-  return svg;
-}
-
-function renderRsCard(p){
-  const fc=p.format==='image'?'#e87fac':'#7ec8e3';
-  const fmtLabel=p.format==='image'?'Image':'Vidéo';
-  const steps=RS_STEPS[p.format]||[];
-  const stepStates=p.steps||{};
-  const total=steps.length;
-  const doneCount=steps.filter(s=>stepStates[s.id]==='done').length;
-  const pct=total?Math.round(doneCount/total*100):0;
-  const isComplete=doneCount===total&&total>0;
-
-  const nets=(p.networks||[]).map(n=>
-    `<span class="rs-net-tag ${n==='instagram'?'rs-ig':'rs-tt'}">${n==='instagram'?'📸':'🎵'}</span>`
-  ).join('');
-
-  let dateLbl='—';
-  if(p.date){
-    const d=new Date(p.date+'T12:00:00');
-    dateLbl=`${d.getDate()} ${['jan','fév','mars','avr','mai','juin','juil','août','sep','oct','nov','déc'][d.getMonth()]}`;
-  }
-
-  const stepsHtml=steps.map(s=>{
-    const st=stepStates[s.id]||'none';
-    return `<div class="rs-step${st!=='none'?' '+st:''}" onclick="cycleStep('${p.id}','${s.id}')"><div class="rs-step-dot"></div><span class="rs-step-lbl">${s.label}</span></div>`;
-  }).join('');
-
-  const st=p.stats||{};
-  const hasStats=st.likes!=null||st.comments!=null||st.views!=null||st.shares!=null;
-  const fmtN=v=>v==null?'—':v>=1000?(v/1000).toFixed(1)+'k':v.toString();
-  const statsHtml=hasStats?`
-    <div class="rs-stats-row">
-      ${st.likes!=null?`<div class="rs-stat-item"><span>❤️</span><span class="rs-stat-val">${fmtN(st.likes)}</span><span>j'aime</span></div>`:''}
-      ${st.comments!=null?`<div class="rs-stat-item"><span>💬</span><span class="rs-stat-val">${fmtN(st.comments)}</span><span>commentaires</span></div>`:''}
-      ${st.views!=null?`<div class="rs-stat-item"><span>👁</span><span class="rs-stat-val">${fmtN(st.views)}</span><span>vues</span></div>`:''}
-      ${st.shares!=null?`<div class="rs-stat-item"><span>🔗</span><span class="rs-stat-val">${fmtN(st.shares)}</span><span>partages</span></div>`:''}
-      ${st.engagement!=null?`<div class="rs-stat-item"><span>📊</span><span class="rs-stat-val" style="color:${st.engagement>=3?'#5a9e6f':st.engagement>=1?'#e2c97e':'#d95f3b'}">${st.engagement.toFixed(1)}%</span><span>engagement</span></div>`:''}
-      ${st.note?`<div class="rs-stat-item" style="flex:1;font-style:italic;color:var(--text-m);font-size:.7rem">"${esc(st.note)}"</div>`:''}
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:.65rem" onclick="openRsStatsPanel('${p.id}')">✎</button>
-    </div>`:
-    (!isComplete?`<div class="rs-stats-row"><span style="font-size:.7rem;color:var(--text-m);font-style:italic">Stats J+7 — </span><button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="openRsStatsPanel('${p.id}')">+ Ajouter</button></div>`:'');
-
-  return `<div class="rs-card rs-card-compact${isComplete?' rs-done':''}" id="rscard-${p.id}">
-    <div class="rs-card-row">
-      <span class="rs-format-badge ${p.format==='image'?'rs-img':'rs-vid'}" style="font-size:.6rem;padding:2px 7px">${fmtLabel}</span>
-      ${nets}
-      <span class="rs-date" style="white-space:nowrap">📅 ${dateLbl}</span>
-      <div class="rs-card-title-inline" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;color:var(--text);padding:0 4px">${esc(p.title)}</div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-        <div style="width:52px;height:3px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${isComplete?'var(--gold)':fc};transition:width .4s"></div>
-        </div>
-        <span style="font-size:.6rem;color:var(--text-m);white-space:nowrap">${isComplete?'✓':doneCount+'/'+total}</span>
-      </div>
-      <button class="ag-ev-btn" style="font-size:13px;opacity:.5;flex-shrink:0" title="Modifier" onclick="openRsPanel('${p.id}')">✎</button>
-      <button class="ag-ev-btn" style="font-size:13px;opacity:.5;flex-shrink:0" title="Supprimer" onclick="deleteRsPost('${p.id}')">×</button>
-    </div>
-    ${!isComplete?`<div class="rs-steps" style="padding:4px 14px 8px;gap:4px">${stepsHtml}</div>`:''}
-    ${statsHtml}
-  </div>`;
-}
-
-function cycleStep(postId, stepId){
-  if(!S.posts) return;
-  const p=S.posts.find(x=>x.id===postId); if(!p) return;
-  if(!p.steps) p.steps={};
-  const cur=p.steps[stepId]||'none';
-  p.steps[stepId]=cur==='none'?'inprogress':cur==='inprogress'?'done':'none';
-  saveS(); renderRS();
-}
-
-// ── RS Panel (add/edit) ──
-function openRsPanel(editId){
-  _rsEditId=editId||null;
-  const p=editId?(S.posts||[]).find(x=>x.id===editId):null;
-  document.getElementById('rs-panel-title').textContent=p?'Modifier la publication':'Nouvelle publication';
-  document.getElementById('rs-title').value=p?p.title:'';
-  document.getElementById('rs-date').value=p?p.date:'';
-  document.getElementById('rs-note').value=p?p.note:'';
-  document.querySelector(`input[name="rs-format"][value="${p?p.format:'image'}"]`).checked=true;
-  document.getElementById('rs-ig').checked=!!(p&&p.networks&&p.networks.includes('instagram'));
-  document.getElementById('rs-tt').checked=!!(p&&p.networks&&p.networks.includes('tiktok'));
-  rsFormatChange();
-  openPanel('rs-panel');
-}
-
-function rsFormatChange(){
-  const fmt=document.querySelector('input[name="rs-format"]:checked').value;
-  document.getElementById('fmt-img-lbl').style.borderColor=fmt==='image'?'#e87fac':'var(--border)';
-  document.getElementById('fmt-vid-lbl').style.borderColor=fmt==='video'?'#7ec8e3':'var(--border)';
-}
-
-function saveRsPost(){
-  const title=document.getElementById('rs-title').value.trim();
-  if(!title) return;
-  const fmt=document.querySelector('input[name="rs-format"]:checked').value;
-  const nets=[];
-  if(document.getElementById('rs-ig').checked) nets.push('instagram');
-  if(document.getElementById('rs-tt').checked) nets.push('tiktok');
-  if(!S.posts) S.posts=[];
-  if(_rsEditId){
-    const p=S.posts.find(x=>x.id===_rsEditId);
-    if(p){
-      p.title=title; p.format=fmt; p.date=document.getElementById('rs-date').value;
-      p.networks=nets; p.note=document.getElementById('rs-note').value.trim();
-      // reset steps if format changed
-    }
-  } else {
-    S.posts.push({
-      id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),
-      title, format:fmt,
-      date:document.getElementById('rs-date').value,
-      networks:nets,
-      note:document.getElementById('rs-note').value.trim(),
-      steps:{}, stats:null
-    });
-  }
-  saveS(); closePanel('rs-panel'); renderRS();
-}
-
-function deleteRsPost(id){
-  S.posts=(S.posts||[]).filter(p=>p.id!==id);
-  saveS(); renderRS();
-}
-
-// ── RS Stats Panel ──
-let _rsStatsId=null;
-function openRsStatsPanel(postId){
-  _rsStatsId=postId;
-  const p=(S.posts||[]).find(x=>x.id===postId); if(!p) return;
-  const fc=p.format==='image'?'#e87fac':'#7ec8e3';
-  document.getElementById('rs-stats-bar').style.background=fc;
-  document.getElementById('rs-stats-title').textContent=`Stats — ${esc(p.title)}`;
-  const nets=(p.networks||[]).map(n=>n==='instagram'?'Instagram':'TikTok').join(' + ');
-  document.getElementById('rs-stats-meta').textContent=`${p.format==='image'?'Image':'Vidéo'} · ${nets} · J+7`;
-  const st=p.stats||{};
-  document.getElementById('rs-likes').value=st.likes??'';
-  document.getElementById('rs-comments').value=st.comments??'';
-  document.getElementById('rs-views').value=st.views??'';
-  document.getElementById('rs-shares').value=st.shares??'';
-  document.getElementById('rs-stats-note').value=st.note||'';
-  rsCalcEngagement();
-  openPanel('rs-stats-panel');
-}
-
-function rsCalcEngagement(){
-  const likes=parseFloat(document.getElementById('rs-likes').value)||0;
-  const comments=parseFloat(document.getElementById('rs-comments').value)||0;
-  const shares=parseFloat(document.getElementById('rs-shares').value)||0;
-  const views=parseFloat(document.getElementById('rs-views').value)||0;
-  const el=document.getElementById('rs-engagement-calc');
-  if(views>0){
-    const eng=(likes+comments+shares)/views*100;
-    el.textContent=eng.toFixed(2)+'%';
-    el.style.color=eng>=3?'#5a9e6f':eng>=1?'#e2c97e':'#d95f3b';
-  } else {
-    el.textContent='—';
-    el.style.color='var(--gold-l)';
-  }
-}
-
-function saveRsStats(){
-  const p=(S.posts||[]).find(x=>x.id===_rsStatsId); if(!p) return;
-  const num=id=>{const v=parseInt(document.getElementById(id).value);return isNaN(v)?null:v;};
-  const likes=num('rs-likes'), comments=num('rs-comments');
-  const views=num('rs-views'), shares=num('rs-shares');
-  let engagement=null;
-  if(views>0&&likes!=null) engagement=((likes||0)+(comments||0)+(shares||0))/views*100;
-  p.stats={likes, comments, views, shares, engagement,
-    note:document.getElementById('rs-stats-note').value.trim()
-  };
-  saveS(); closePanel('rs-stats-panel'); renderRS();
-}
-
 // ════════════════════════════════════════
 // HUMEUR
 // ════════════════════════════════════════
@@ -2156,13 +1733,213 @@ function importData(evt){
   reader.readAsText(file);
 }
 // ════════════════════════════════════════
+// EXPORT MENSUEL EXCEL
+// ════════════════════════════════════════
+function exportMonthlyExcel(yr,mo){
+  const moStr=String(mo+1).padStart(2,'0');
+  const moLabel=['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'][mo];
+  const wb=XLSX.utils.book_new();
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const dayNames=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+
+  // Humeur
+  const moodRows=[['Date','Jour','Score /20','Humeur','Note']];
+  let moodSum=0,moodCount=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=yr+'-'+moStr+'-'+String(d).padStart(2,'0');
+    const entry=S.moods&&S.moods[iso];
+    const dayName=dayNames[new Date(iso+'T12:00:00').getDay()];
+    if(entry!=null){
+      const lbl=entry.score===0?'Nulle':entry.score<=3?'Tres difficile':entry.score<=6?'Difficile':entry.score<=9?'Moyenne':entry.score===10?'Neutre':entry.score<=13?'Correcte':entry.score<=16?'Bonne':entry.score<=19?'Tres bonne':'Doree';
+      moodRows.push([iso,dayName,entry.score,lbl,entry.note||'']);
+      moodSum+=entry.score; moodCount++;
+    } else {
+      moodRows.push([iso,dayName,'','','']);
+    }
+  }
+  moodRows.push([]);
+  moodRows.push(['Moyenne','',(moodCount>0?(moodSum/moodCount).toFixed(1):'—'),'','']);
+  moodRows.push(['Jours renseignes','',moodCount+'/'+daysInMonth,'','']);
+  const wsMood=XLSX.utils.aoa_to_sheet(moodRows);
+  wsMood['!cols']=[{wch:12},{wch:12},{wch:10},{wch:14},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,wsMood,'Humeur');
+
+  // Agenda
+  const agRows=[['Semaine','Lun','Mar','Mer','Jeu','Ven','Sam','Dim','Total (h)','Par categorie']];
+  const seen=new Set();
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(yr,mo,d);
+    const dow=date.getDay();
+    const off=dow===0?-6:1-dow;
+    const mon=new Date(yr,mo,d+off);
+    const monKey=toISO(mon);
+    if(seen.has(monKey)) continue;
+    seen.add(monKey);
+    const dayHours=[];
+    const catTotals={};
+    CAT_KEYS.forEach(function(k){catTotals[k]=0;});
+    let weekTotal=0;
+    for(let i=0;i<7;i++){
+      const dd=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i);
+      const iso=toISO(dd);
+      const evs=S.events[iso]||[];
+      let mins=0;
+      evs.forEach(function(e){
+        const dur=parseInt(e.end)-parseInt(e.start);
+        if(dur>0){mins+=dur;if(catTotals[e.cat]!=null)catTotals[e.cat]+=dur;}
+      });
+      // Add habitMins
+      const hevs=getHabitEventsForDate(iso);
+      hevs.forEach(function(m){
+        mins+=m.duration;
+        const c=m.cat&&catTotals[m.cat]!=null?m.cat:CAT_KEYS[0];
+        catTotals[c]+=m.duration;
+      });
+      dayHours.push((mins/60).toFixed(1));
+      weekTotal+=mins;
+    }
+    const catStr=CAT_KEYS.filter(function(k){return catTotals[k]>0;}).map(function(k){return CATS[k].label+': '+(catTotals[k]/60).toFixed(1)+'h';}).join(' | ');
+    agRows.push(['Sem. '+monKey,...dayHours,(weekTotal/60).toFixed(1),catStr]);
+  }
+  const wsAg=XLSX.utils.aoa_to_sheet(agRows);
+  wsAg['!cols']=[{wch:14},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:10},{wch:55}];
+  XLSX.utils.book_append_sheet(wb,wsAg,'Agenda');
+
+  // Habitudes
+  const habRows=[['Habitude','Groupe','Frequence','Categorie','Duree (min)','Realisations','Objectif','Taux (%)']];
+  const allH=[...(S.habits.daily||[]),...(S.habits.weekly||[]),...(S.habits.monthly||[])];
+  allH.forEach(function(h){
+    const grpLabel=HABIT_GROUPS[h.group]?HABIT_GROUPS[h.group].label:h.group||'';
+    const catLabel=h.cat&&CATS[h.cat]?CATS[h.cat].label:'';
+    if(h.freq==='daily'){
+      let done=0;
+      for(let d=1;d<=daysInMonth;d++){
+        const iso=yr+'-'+moStr+'-'+String(d).padStart(2,'0');
+        if(S.habitChecks['daily:'+h.id+':'+iso]) done++;
+      }
+      habRows.push([h.name,grpLabel,'Quotidien',catLabel,h.duration||0,done,daysInMonth,Math.round(done/daysInMonth*100)+'%']);
+    } else if(h.freq==='weekly'){
+      let done=0;
+      for(let w=1;w<=5;w++){
+        if(S.habitChecks['weekly:'+h.id+':'+yr+'-'+moStr+'-W'+w]) done++;
+      }
+      const weeksInMonth=Math.ceil((new Date(yr,mo,1).getDay()===0?6:new Date(yr,mo,1).getDay()-1+daysInMonth)/7);
+      habRows.push([h.name,grpLabel,'Hebdomadaire',catLabel,h.duration||0,done,weeksInMonth,Math.round(done/weeksInMonth*100)+'%']);
+    } else {
+      const done=S.habitChecks['monthly:'+h.id+':'+yr+'-'+moStr]?1:0;
+      habRows.push([h.name,grpLabel,'Mensuel',catLabel,h.duration||0,done,1,done?'100%':'0%']);
+    }
+  });
+  const wsHab=XLSX.utils.aoa_to_sheet(habRows);
+  wsHab['!cols']=[{wch:24},{wch:12},{wch:14},{wch:18},{wch:12},{wch:12},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,wsHab,'Habitudes');
+
+  XLSX.writeFile(wb,'mon-agenda-'+yr+'-'+moStr+'.xlsx');
+}
+
+function checkMonthlyExportReminder(){
+  const today=new Date();
+  const lastDay=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  if(today.getDate()!==lastDay) return;
+  const todayIso=todayISO();
+  const lastReminder=localStorage.getItem('lastExportReminder');
+  if(lastReminder===todayIso) return;
+  localStorage.setItem('lastExportReminder',todayIso);
+  setTimeout(function(){
+    const banner=document.createElement('div');
+    banner.id='export-banner';
+    banner.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--gold);border-radius:12px;padding:14px 20px;z-index:200;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:420px;width:90%';
+    const mn=['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'][today.getMonth()];
+    const yr2=today.getFullYear(), mo2=today.getMonth();
+    const btnExport=document.createElement('button');
+    btnExport.className='btn btn-sm';
+    btnExport.style.cssText='flex-shrink:0;font-size:.72rem';
+    btnExport.textContent='⬇ Exporter';
+    btnExport.onclick=function(){exportMonthlyExcel(yr2,mo2);document.getElementById('export-banner').remove();};
+    const btnClose=document.createElement('button');
+    btnClose.style.cssText='background:none;border:none;color:var(--text-m);cursor:pointer;font-size:1rem;padding:4px';
+    btnClose.textContent='✕';
+    btnClose.onclick=function(){document.getElementById('export-banner').remove();};
+    banner.innerHTML='<span style="font-size:1.4rem">📊</span><div style="flex:1"><div style="font-size:.85rem;font-weight:500;color:var(--gold-l);margin-bottom:3px">Fin de mois — archiver ?</div><div style="font-size:.72rem;color:var(--text-m)">Exporte tes données de '+mn+' en Excel.</div></div>';
+    banner.appendChild(btnExport);
+    banner.appendChild(btnClose);
+    document.body.appendChild(banner);
+  },2000);
+}
+
+// ════════════════════════════════════════
 // SERVICE WORKER (PWA offline)
 // ════════════════════════════════════════
 if('serviceWorker' in navigator){
-  const swCode=`const CACHE='agenda-v1';self.addEventListener('install',e=>{self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const cl=res.clone();if(e.request.method==='GET')caches.open(CACHE).then(c=>c.put(e.request,cl));return res;})));});`;
+  const swCode=`
+const CACHE='agenda-v2';
+const NOTIF_HOUR=22;
+
+self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  // Schedule first alarm check
+  scheduleAlarm();
+});
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+    const cl=res.clone();
+    if(e.request.method==='GET') caches.open(CACHE).then(c=>c.put(e.request,cl));
+    return res;
+  }).catch(()=>caches.match('/'))));
+});
+
+// Message from page : request notif permission result or manual trigger
+self.addEventListener('message',e=>{
+  if(e.data==='check-notif') checkAndNotify();
+});
+
+function scheduleAlarm(){
+  // Check every 30min via setTimeout chain
+  setTimeout(()=>{ checkAndNotify(); scheduleAlarm(); }, 30*60*1000);
+}
+
+function checkAndNotify(){
+  const now=new Date();
+  const h=now.getHours();
+  const todayKey='notif-'+now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+  // Only between 22:00 and 22:59
+  if(h!==NOTIF_HOUR) return;
+  self.registration.showNotification('Mon Agenda ✦',{
+    body:'N\'oublie pas de noter ta journée !',
+    icon:'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'%3E%3Crect width=\'192\' height=\'192\' fill=\'%230c0b09\'/%3E%3Ctext x=\'96\' y=\'125\' text-anchor=\'middle\' font-size=\'110\' fill=\'%23c9a84c\'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E',
+    badge:'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 96 96\'%3E%3Crect width=\'96\' height=\'96\' fill=\'%230c0b09\'/%3E%3Ctext x=\'48\' y=\'65\' text-anchor=\'middle\' font-size=\'60\' fill=\'%23c9a84c\'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E',
+    tag:'daily-reminder',
+    renotify:false,
+  });
+}
+
+self.addEventListener('notificationclick',e=>{
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window'}).then(cs=>{
+    if(cs.length) return cs[0].focus();
+    return clients.openWindow('./');
+  }));
+});
+  `;
   const swBlob=new Blob([swCode],{type:'application/javascript'});
   const swUrl=URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl,{scope:'./'}).catch(()=>{});
+  navigator.serviceWorker.register(swUrl,{scope:'./'}).then(reg=>{
+    // Ask notification permission on first load
+    if('Notification' in window && Notification.permission==='default'){
+      setTimeout(()=>{
+        Notification.requestPermission().then(perm=>{
+          if(perm==='granted'){
+            console.log('Notifications autorisées — rappel à 22h activé');
+          }
+        });
+      }, 3000);
+    }
+    // Ping SW every 30min to keep alarm alive while page is open
+    setInterval(()=>{
+      if(reg.active) reg.active.postMessage('check-notif');
+    }, 30*60*1000);
+  }).catch(()=>{});
 }
 // ════════════════════════════════════════
 // INIT
@@ -2171,6 +1948,35 @@ loadS();
 if(!S.posts) S.posts=[];
 renderDashboard();
 checkMonthlyExportReminder();
+
+// Event delegation for habit toggles — registered after DOM ready
+document.addEventListener('click',function(e){
+  const tog=e.target.closest('.hab-toggle');
+  if(tog){ toggleHabitItem(tog.dataset.id,'daily',tog.dataset.cat,parseInt(tog.dataset.dur)||0); return; }
+  const togW=e.target.closest('.hab-toggle-wk');
+  if(togW){
+    const id=togW.dataset.id;
+    const yr=parseInt(togW.dataset.yr);
+    const mo=parseInt(togW.dataset.mo);
+    const wk=parseInt(togW.dataset.wk);
+    const cat=togW.dataset.cat||'';
+    const dur=parseInt(togW.dataset.dur)||0;
+    toggleHabitWeeklyN(id,yr,mo,wk,cat,dur);
+    return;
+  }
+  const togM=e.target.closest('.hab-toggle-mo');
+  if(togM){
+    const id=togM.dataset.id;
+    const cat=togM.dataset.cat||'';
+    const dur=parseInt(togM.dataset.dur)||0;
+    toggleHabitMonthlyN(id,cat,dur);
+    return;
+  }
+  const del=e.target.closest('.hab-del-btn');
+  if(del){ deleteHabit(del.dataset.id,del.dataset.freq); return; }
+  const edit=e.target.closest('.hab-edit-btn');
+  if(edit){ openHabPanelEdit(edit.dataset.id,edit.dataset.freq); return; }
+});
 </script>
 </body>
 </html>
